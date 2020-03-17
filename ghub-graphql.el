@@ -144,9 +144,11 @@ behave as for `ghub-request' (which see)."
                      body
                      (baseRef name
                               (repository nameWithOwner))
+                     baseRefOid
                      (headRef name
                               (repository (owner login)
                                           nameWithOwner))
+                     headRefOid
                      (assignees [(:edges t)]
                                 id)
                      (reviewRequests [(:edges t)]
@@ -157,6 +159,82 @@ behave as for `ghub-request' (which see)."
                                 createdAt
 	                        updatedAt
 	                        body)
+                     ;; ERRORS !!!!
+                     ;; if: peculiar error: ((type . "MAX_NODE_LIMIT_EXCEEDED") (locations ((line . 232) (column . 3))) (message . "By the time this query traverses to the comments connection, it is requesting up to 1,000,000 possible nodes which exceeds the maximum limit of 500,000."))
+                     ;;
+                     ;; (reviewThreads [(:edges t)]
+                     ;;                id
+                     ;;                line
+                     ;;                originalLine
+                     ;;                diffSide
+                     ;;                (resolvedBy login)
+                     ;;                (comments [(:edges t)]
+                     ;;                          id
+                     ;;                          databaseId
+                     ;;                          (author login)
+                     ;;                          createdAt
+                     ;;                          updatedAt
+                     ;;                          body
+                     ;;                          (replyTo databaseId)
+                     ;;                          (originalCommit oid)
+                     ;;                          path))
+                     (labels    [(:edges t)]
+                                id)))))
+
+(defconst ghub-fetch-repository-review-threads
+  '(query
+    (repository
+     [(owner $owner String!)
+      (name  $name  String!)]
+     (pullRequests   [(:edges t)
+                      (:singular pullRequest number)
+                      (orderBy ((field UPDATED_AT) (direction DESC)))]
+                     number
+                     state
+                     (author login)
+                     title
+                     createdAt
+                     updatedAt
+                     closedAt
+                     mergedAt
+                     locked
+                     maintainerCanModify
+                     isCrossRepository
+                     (milestone id)
+                     body
+                     (baseRef name
+                              (repository nameWithOwner))
+                     baseRefOid
+                     (headRef name
+                              (repository (owner login)
+                                          nameWithOwner))
+                     headRefOid
+                     (assignees [(:edges t)]
+                                id)
+                     (reviewRequests [(:edges t)]
+                                     (requestedReviewer "... on User { id }\n"))
+                     (comments  [(:edges t)]
+                                databaseId
+                                (author login)
+                                createdAt
+	                        updatedAt
+	                        body)
+                     (reviewThreads [(:edges t)]
+                                    id
+                                    line
+                                    originalLine
+                                    diffSide
+                                    (resolvedBy login)
+                                    (comments [(:edges t)]
+                                              id
+                                              databaseId
+                                              (author login)
+                                              createdAt
+                                              updatedAt
+                                              body
+                                              (replyTo databaseId)
+                                              (originalCommit oid)
+                                              path))
                      (labels    [(:edges t)]
                                 id)))))
 
@@ -208,7 +286,7 @@ data as the only argument."
 Once all data has been collected, CALLBACK is called with the
 data as the only argument."
   (ghub--graphql-vacuum (ghub--graphql-prepare-query
-                         ghub-fetch-repository
+                         ghub-fetch-repository-review-threads
                          `(repository pullRequests (pullRequest . ,number)))
                         `((owner . ,owner)
                           (name  . ,name))
