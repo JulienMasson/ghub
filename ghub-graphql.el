@@ -162,7 +162,8 @@ behave as for `ghub-request' (which see)."
 
 (cl-defun ghub-fetch-repository (owner name callback
                                        &optional until
-                                       &key username auth host forge errorback)
+                                       &key username auth host headers
+                                       forge errorback)
   "Asynchronously fetch forge data about the specified repository.
 Once all data has been collected, CALLBACK is called with the
 data as the only argument."
@@ -174,12 +175,14 @@ data as the only argument."
                         :username username
                         :auth     auth
                         :host     host
+                        :headers  headers
                         :forge    forge
                         :errorback errorback))
 
 (cl-defun ghub-fetch-issue (owner name number callback
                                   &optional until
-                                  &key username auth host forge errorback)
+                                  &key username auth host headers
+                                  forge errorback)
   "Asynchronously fetch forge data about the specified issue.
 Once all data has been collected, CALLBACK is called with the
 data as the only argument."
@@ -193,12 +196,14 @@ data as the only argument."
                         :username username
                         :auth     auth
                         :host     host
+                        :headers  headers
                         :forge    forge
                         :errorback errorback))
 
 (cl-defun ghub-fetch-pullreq (owner name number callback
                                     &optional until
-                                    &key username auth host forge errorback)
+                                    &key username auth host headers
+                                    forge errorback)
   "Asynchronously fetch forge data about the specified pull-request.
 Once all data has been collected, CALLBACK is called with the
 data as the only argument."
@@ -212,6 +217,7 @@ data as the only argument."
                         :username username
                         :auth     auth
                         :host     host
+                        :headers  headers
                         :forge    forge
                         :errorback errorback))
 
@@ -230,8 +236,8 @@ data as the only argument."
 
 (cl-defun ghub--graphql-vacuum (query variables callback
                                       &optional until
-                                      &key narrow username auth host forge
-                                      errorback)
+                                      &key narrow username auth host headers
+                                      forge errorback)
   "Make a GraphQL request using QUERY and VARIABLES.
 See Info node `(ghub)GraphQL Support'."
   (unless host
@@ -246,7 +252,7 @@ See Info node `(ghub)GraphQL Support'."
                             (substring host 0 -3)
                           host)))
     :method    "POST"
-    :headers   (ghub--headers nil host auth username forge)
+    :headers   (ghub--headers headers host auth username forge)
     :handler   'ghub--graphql-handle-response
     :query     query
     :variables variables
