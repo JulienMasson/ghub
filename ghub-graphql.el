@@ -219,6 +219,18 @@ behave as for `ghub-request' (which see)."
                                 createdAt
 	                        updatedAt
 	                        body)
+		     (commits   [(:edges t)]
+				id
+				(commit oid
+					abbreviatedOid
+					(author name
+						email)
+					authoredDate
+					(committer name
+						   email)
+					committedDate
+					messageBody
+					messageHeadline))
                      (reviewThreads [(:edges t)]
                                     id
                                     line
